@@ -1,10 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
     <title>Matematik Maratonu | Rekor Kır</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Şık imza fontu (Playfair Display) eklendi -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #f0f2f5;
@@ -40,15 +41,20 @@
             position: relative;
         }
 
+        /* --- İMZA STİLİ GÜNCELLENDİ --- */
         .signature {
             position: fixed;
-            bottom: 15px;
-            right: 20px;
-            font-size: 0.85rem;
-            color: rgba(45, 52, 54, 0.4);
-            font-weight: 600;
+            bottom: 20px;
+            right: 25px;
+            font-size: 1.1rem;
+            color: var(--text);
+            font-family: 'Playfair Display', serif; /* Elit font */
+            font-style: italic;
+            font-weight: 400;
             pointer-events: none;
             z-index: 1000;
+            opacity: 0.25; /* Saudam/Saydam görünüm */
+            letter-spacing: 2px;
         }
 
         /* --- SETUP SCREEN --- */
@@ -280,6 +286,7 @@
             box-shadow: 0 4px 0 var(--success-hover);
         }
         .btn-pass {
+            grid-column: span 1;
             background: var(--warning);
             color: #636e72;
             box-shadow: 0 4px 0 #e1b12c;
@@ -304,17 +311,37 @@
         /* --- ANIMATIONS --- */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
         }
-        .wrong { animation: shake 0.3s; background: var(--danger) !important; }
+        /* Kırmızı ve Sallanma */
+        .wrong { 
+            animation: shake 0.4s; 
+            background: var(--danger) !important; 
+            box-shadow: 0 0 30px rgba(214, 48, 49, 0.6);
+        }
 
         @keyframes pop {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-        .correct { animation: pop 0.4s; background: var(--success) !important; }
+        /* Yeşil ve Parlama */
+        .correct { 
+            animation: pop 0.4s; 
+            background: var(--success) !important; 
+            box-shadow: 0 0 30px rgba(0, 184, 148, 0.6);
+        }
+
+        /* Pas Efekti: Küçülme ve Sarı Arkaplan */
+        @keyframes pass-anim {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); background: var(--warning); opacity: 0.8; }
+            100% { transform: scale(1); }
+        }
+        .passed { animation: pass-anim 0.3s; }
 
         /* --- RESULT SCREEN --- */
         #result-screen, #leaderboard-screen {
@@ -377,7 +404,8 @@
 </head>
 <body oncontextmenu="return false;">
 
-<div class="signature">Blog: Matematik Köşesi</div>
+<!-- İMZA BURAYA EKLENDİ -->
+<div class="signature">Sami G.</div>
 
 <!-- KURULUM EKRANI -->
 <div id="setup-screen">
@@ -463,8 +491,6 @@
                 <button class="btn" onclick="handleInput('7')">7</button>
                 <button class="btn" onclick="handleInput('8')">8</button>
                 <button class="btn" onclick="handleInput('9')">9</button>
-                <button class="btn btn-del" onclick="handleInput('C')">SIL</button>
-                <button class="btn" onclick="handleInput('0')">0</button>
                 <button class="btn btn-pass" onclick="handleInput('PASS')">PAS</button>
                 <button class="btn btn-check" onclick="handleInput('CHECK')">KONTROL ET</button>
             </div>
@@ -682,6 +708,12 @@
         if (val === 'PASS') {
             if (gameState.passes > 0) {
                 gameState.passes--;
+                
+                // PAS EFEKTİ
+                const box = document.getElementById('qbox');
+                box.classList.add('passed');
+                setTimeout(() => box.classList.remove('passed'), 300);
+
                 updateUI();
                 generateQuestion();
             }
