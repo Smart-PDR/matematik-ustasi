@@ -1,0 +1,797 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+    <title>Matematik Maratonu | Rekor Kır</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --primary: #6c5ce7;
+            --primary-dark: #5849be;
+            --success: #00b894;
+            --success-hover: #00a383;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --text: #2d3436;
+            --accent: #0984e3;
+            --gold: #ffeaa7;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .signature {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            font-size: 0.85rem;
+            color: rgba(45, 52, 54, 0.4);
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* --- SETUP SCREEN --- */
+        #setup-screen {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .setup-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .high-score-banner {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            display: none;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .setup-title { font-size: 2rem; margin-bottom: 20px; color: var(--primary); font-weight: 800; }
+        .setup-group { margin-bottom: 20px; }
+        .setup-label { display: block; margin-bottom: 8px; font-weight: 600; color: #636e72; }
+
+        .name-input { 
+            padding: 15px; 
+            border: 2px solid #dfe6e9; 
+            border-radius: 15px; 
+            font-family: inherit; 
+            font-size: 1.1rem; 
+            outline: none; 
+            width: 100%;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .name-input:focus { border-color: var(--primary); }
+
+        .option-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .opt-btn {
+            padding: 10px 15px;
+            border: 2px solid #dfe6e9;
+            background: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            flex: 1;
+            min-width: 70px;
+            color: #b2bec3;
+        }
+        .opt-btn.active { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
+
+        .start-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.2s;
+            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2);
+        }
+        .start-btn:active { transform: scale(0.98); }
+
+        .history-btn {
+            background: white;
+            color: var(--text);
+            border: 2px solid #dfe6e9;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .history-btn:hover { background: #f5f6fa; }
+
+        /* --- COUNTDOWN --- */
+        #countdown-screen {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #countdown-text {
+            font-size: 10rem;
+            font-weight: 800;
+            color: var(--primary);
+            animation: bounceIn 1s infinite;
+        }
+        @keyframes bounceIn {
+            0%, 100% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* --- GAME SCREEN --- */
+        #game-screen {
+            display: none;
+            height: 100%;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            background: #dfe6e9;
+            padding: 20px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            max-height: 800px;
+        }
+
+        .player-zone {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            flex-grow: 1;
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .player-name { font-weight: 700; font-size: 1.3rem; color: var(--primary); }
+
+        .score-box {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+            background: #f1f2f6;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .pass-indicator {
+            font-size: 0.9rem;
+            background: var(--warning);
+            color: #636e72;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .question-box {
+            background: var(--text);
+            color: white;
+            border-radius: 25px;
+            padding: 30px 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: 0.2s;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1; /* Esnek yükseklik */
+            max-height: 250px;
+        }
+
+        .q-text { font-size: 3rem; font-weight: 700; letter-spacing: 2px; }
+        
+        .a-display {
+            font-size: 2.2rem;
+            min-height: 50px;
+            margin-top: 15px;
+            color: var(--success);
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .numpad { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
+            margin-top: auto; 
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 18px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #f1f2f6;
+            color: var(--text);
+            padding: 15px 0;
+            transition: 0.1s;
+            box-shadow: 0 4px 0 #dfe6e9;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        .btn-check { 
+            grid-column: span 2; 
+            background: var(--success); 
+            color: white; 
+            box-shadow: 0 4px 0 var(--success-hover);
+        }
+        .btn-pass {
+            background: var(--warning);
+            color: #636e72;
+            box-shadow: 0 4px 0 #e1b12c;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .btn-del {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 4px 0 #c0392b;
+        }
+
+        /* --- TIMER BAR --- */
+        #timer-bar-container { height: 12px; background: #dfe6e9; width: 100%; position: absolute; top: 0; left: 0; z-index: 50; }
+        #timer-bar { 
+            height: 100%; 
+            background: var(--success); 
+            width: 100%; 
+            transition: width 1s linear, background-color 0.5s ease; 
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .wrong { animation: shake 0.3s; background: var(--danger) !important; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .correct { animation: pop 0.4s; background: var(--success) !important; }
+
+        /* --- RESULT SCREEN --- */
+        #result-screen, #leaderboard-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(45, 52, 54, 0.98);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .result-content {
+            background: white;
+            color: var(--text);
+            padding: 40px;
+            border-radius: 30px;
+            max-width: 400px;
+            width: 100%;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .final-score-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: #636e72; }
+        .final-score-val { font-size: 4rem; font-weight: 800; color: var(--primary); line-height: 1; margin: 10px 0; }
+        .high-score-badge { 
+            background: var(--warning); 
+            color: #2d3436; 
+            display: inline-block; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-weight: 700; 
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-content {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: 30px;
+            padding: 30px;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .table-container { overflow-y: auto; flex-grow: 1; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; }
+        th { font-weight: 700; color: #b2bec3; font-size: 0.9rem; }
+        td { font-weight: 600; }
+        tr:first-child td { color: var(--primary); }
+
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div class="signature">Blog: Matematik Köşesi</div>
+
+<!-- KURULUM EKRANI -->
+<div id="setup-screen">
+    <div class="setup-card">
+        <h1 class="setup-title">Matematik Maratonu</h1>
+
+        <div class="high-score-banner" id="high-score-banner">
+            <div style="font-size:0.9rem; opacity:0.9">SİZİN REKORUNUZ</div>
+            <div style="font-size:1.8rem; font-weight:800" id="banner-score">0 PUAN</div>
+        </div>
+        
+        <div class="setup-group">
+            <label class="setup-label">İsminiz</label>
+            <input class="name-input" id="player-name" placeholder="Öğrenci Adı" type="text" maxlength="15" />
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">İşlemler</label>
+            <div class="option-btns">
+                <button class="opt-btn active" onclick="toggleOp('+', this)">Toplama</button>
+                <button class="opt-btn active" onclick="toggleOp('-', this)">Çıkarma</button>
+                <button class="opt-btn" onclick="toggleOp('*', this)">Çarpma</button>
+                <button class="opt-btn" onclick="toggleOp('/', this)">Bölme</button>
+            </div>
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">Süre</label>
+            <div class="option-btns">
+                <button class="opt-btn" onclick="setTimer(30, this)">30 Sn</button>
+                <button class="opt-btn active" onclick="setTimer(60, this)">60 Sn</button>
+                <button class="opt-btn" onclick="setTimer(120, this)">2 Dk</button>
+            </div>
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">Zorluk Seviyesi</label>
+            <div class="option-btns">
+                <button class="opt-btn active" onclick="setDiff(1, this)">Başlangıç</button>
+                <button class="opt-btn" onclick="setDiff(2, this)">Orta</button>
+                <button class="opt-btn" onclick="setDiff(3, this)">İleri</button>
+            </div>
+        </div>
+
+        <button class="start-btn" onclick="startCountdown()">BAŞLAT</button>
+        <button class="history-btn" onclick="toggleLeaderboard(true)">Geçmiş Denemeler</button>
+    </div>
+</div>
+
+<!-- GERİ SAYIM -->
+<div id="countdown-screen">
+    <div id="countdown-text">3</div>
+</div>
+
+<!-- OYUN EKRANI -->
+<div id="game-screen">
+    <div id="timer-bar-container">
+        <div id="timer-bar"></div>
+    </div>
+
+    <div class="game-container">
+        <div class="player-zone">
+            <div class="header">
+                <div class="player-name" id="display-name">OYUNCU</div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="pass-indicator">PAS: <span id="pass-count">3</span></div>
+                    <div class="score-box" id="score">0</div>
+                </div>
+            </div>
+            
+            <div class="question-box" id="qbox">
+                <div class="q-text" id="qtext">?</div>
+                <div class="a-display" id="adisplay"></div>
+            </div>
+            
+            <div class="numpad">
+                <button class="btn" onclick="handleInput('1')">1</button>
+                <button class="btn" onclick="handleInput('2')">2</button>
+                <button class="btn" onclick="handleInput('3')">3</button>
+                <button class="btn" onclick="handleInput('4')">4</button>
+                <button class="btn" onclick="handleInput('5')">5</button>
+                <button class="btn" onclick="handleInput('6')">6</button>
+                <button class="btn" onclick="handleInput('7')">7</button>
+                <button class="btn" onclick="handleInput('8')">8</button>
+                <button class="btn" onclick="handleInput('9')">9</button>
+                <button class="btn btn-del" onclick="handleInput('C')">SIL</button>
+                <button class="btn" onclick="handleInput('0')">0</button>
+                <button class="btn btn-pass" onclick="handleInput('PASS')">PAS</button>
+                <button class="btn btn-check" onclick="handleInput('CHECK')">KONTROL ET</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SONUÇ EKRANI -->
+<div id="result-screen">
+    <div class="result-content">
+        <div style="font-size:3rem; margin-bottom:10px;">⏱️</div>
+        <div class="final-score-title">Süre Doldu! Skorun:</div>
+        <div class="final-score-val" id="final-score">0</div>
+        <div id="new-record-badge" class="high-score-badge" style="display:none">✨ YENİ REKOR! ✨</div>
+        <p id="motivation-text" style="color:#636e72; margin-bottom:20px; font-style:italic;">Harika bir çabaydı!</p>
+        <button class="start-btn" onclick="resetGame()">TEKRAR DENE</button>
+        <button class="history-btn" onclick="exitToMenu()">ANA MENÜ</button>
+    </div>
+</div>
+
+<!-- GEÇMİŞ EKRANI -->
+<div id="leaderboard-screen">
+    <div class="leaderboard-content">
+        <h2 style="margin-bottom: 20px; color:var(--primary)">📜 Son 10 Deneme</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Tarih</th><th>İsim</th><th>Skor</th><th>Zorluk</th></tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
+        </div>
+        <button class="history-btn" onclick="toggleLeaderboard(false)" style="margin-top: 20px;">KAPAT</button>
+    </div>
+</div>
+
+<script>
+    // --- OYUN AYARLARI VE DEĞİŞKENLER ---
+    let config = { time: 60, difficulty: 1, allowedOps: ['+', '-'] };
+    let sessionHistory = JSON.parse(localStorage.getItem('mathMarathonHistory')) || [];
+    let personalBest = localStorage.getItem('mathMarathonBest') || 0;
+
+    let gameState = {
+        name: "",
+        score: 0,
+        currentAns: 0,
+        input: "",
+        passes: 3,
+        timeLeft: 60,
+        active: false,
+        timerLoop: null
+    };
+
+    const motivationSentences = [
+        "Harika gidiyorsun, pratik yaptıkça hızlanacaksın!",
+        "Matematik kasların gelişiyor!",
+        "Bir dahaki sefere kendi rekorunu kırabilirsin.",
+        "Süper odaklanma! Aynen devam et.",
+        "Rakamların efendisi olma yolundasın!"
+    ];
+
+    // --- BAŞLANGIÇ AYARLARI ---
+    window.onload = () => {
+        updateHighScoreDisplay();
+        setupTouch();
+    };
+
+    function updateHighScoreDisplay() {
+        if (personalBest > 0) {
+            document.getElementById('high-score-banner').style.display = 'block';
+            document.getElementById('banner-score').textContent = personalBest + " PUAN";
+        }
+    }
+
+    function setupTouch() {
+        // Dokunmatik gecikmesini önlemek için
+        document.addEventListener('touchstart', function(event) {
+            if (event.target.tagName === 'BUTTON') {
+                event.target.click();
+                event.preventDefault();
+            }
+        }, { passive: false });
+    }
+
+    // --- MENU ETKİLEŞİMLERİ ---
+    function toggleOp(op, btn) {
+        if (btn.classList.contains('active')) {
+            if (config.allowedOps.length > 1) {
+                config.allowedOps = config.allowedOps.filter(o => o !== op);
+                btn.classList.remove('active');
+            }
+        } else {
+            config.allowedOps.push(op);
+            btn.classList.add('active');
+        }
+    }
+
+    function setTimer(val, btn) {
+        config.time = val;
+        btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function setDiff(val, btn) {
+        config.difficulty = val;
+        btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    // --- OYUN DÖNGÜSÜ ---
+    function startCountdown() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        gameState.name = nameInput || "Oyuncu";
+        
+        document.getElementById('setup-screen').style.display = 'none';
+        const scr = document.getElementById('countdown-screen');
+        const txt = document.getElementById('countdown-text');
+        scr.style.display = 'flex';
+        
+        let c = 3;
+        txt.textContent = c;
+        
+        const loop = setInterval(() => {
+            c--;
+            if (c > 0) {
+                txt.textContent = c;
+            } else {
+                clearInterval(loop);
+                txt.textContent = "BAŞLA!";
+                setTimeout(() => {
+                    scr.style.display = 'none';
+                    startGame();
+                }, 600);
+            }
+        }, 800);
+    }
+
+    function startGame() {
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('display-name').textContent = gameState.name.toUpperCase();
+        
+        // Reset State
+        gameState.score = 0;
+        gameState.passes = 3;
+        gameState.timeLeft = config.time;
+        gameState.active = true;
+        gameState.input = "";
+        
+        updateUI();
+        generateQuestion();
+        startTimer();
+    }
+
+    function startTimer() {
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = '100%';
+        bar.style.backgroundColor = 'var(--success)';
+
+        gameState.timerLoop = setInterval(() => {
+            if (!gameState.active) return;
+            gameState.timeLeft--;
+            
+            const pct = (gameState.timeLeft / config.time) * 100;
+            bar.style.width = pct + "%";
+            
+            if (pct < 30) bar.style.backgroundColor = 'var(--danger)';
+            else if (pct < 60) bar.style.backgroundColor = 'var(--warning)';
+
+            if (gameState.timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
+
+    function generateQuestion() {
+        const ops = config.allowedOps;
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let n1, n2, ans, symbol = op;
+        const mult = config.difficulty * 10; // Zorluk çarpanı
+        
+        // Mantıklı soru üretimi
+        if (op === '+') {
+            n1 = Math.floor(Math.random() * mult) + 5;
+            n2 = Math.floor(Math.random() * mult) + 5;
+            ans = n1 + n2;
+        } else if (op === '-') {
+            n1 = Math.floor(Math.random() * mult) + 10;
+            n2 = Math.floor(Math.random() * n1); 
+            ans = n1 - n2;
+        } else if (op === '*') {
+            // Çarpma için daha küçük sayılar
+            let maxFactor = config.difficulty === 1 ? 9 : (config.difficulty === 2 ? 12 : 20);
+            n1 = Math.floor(Math.random() * maxFactor) + 2;
+            n2 = Math.floor(Math.random() * maxFactor) + 2;
+            ans = n1 * n2;
+            symbol = 'x';
+        } else { // Bölme
+            let divisorMax = config.difficulty === 1 ? 9 : 15;
+            n2 = Math.floor(Math.random() * divisorMax) + 2;
+            ans = Math.floor(Math.random() * 10) + 2; // Sonuç
+            n1 = n2 * ans;
+            symbol = '÷';
+        }
+
+        gameState.currentAns = ans;
+        gameState.input = "";
+        document.getElementById('qtext').textContent = `${n1} ${symbol} ${n2}`;
+        document.getElementById('adisplay').textContent = "?";
+        document.getElementById('adisplay').style.color = "var(--text)";
+    }
+
+    function handleInput(val) {
+        if (!gameState.active) return;
+
+        if (val === 'PASS') {
+            if (gameState.passes > 0) {
+                gameState.passes--;
+                updateUI();
+                generateQuestion();
+            }
+        } else if (val === 'CHECK') {
+            checkAnswer();
+        } else if (val === 'C') {
+            gameState.input = "";
+            updateDisplayInput();
+        } else {
+            if (gameState.input.length < 6) {
+                gameState.input += val;
+                updateDisplayInput();
+            }
+        }
+    }
+
+    function updateDisplayInput() {
+        const disp = document.getElementById('adisplay');
+        disp.textContent = gameState.input;
+        disp.style.color = "var(--primary)";
+    }
+
+    function checkAnswer() {
+        if (gameState.input === "") return;
+        
+        const userAns = parseInt(gameState.input);
+        const box = document.getElementById('qbox');
+
+        if (userAns === gameState.currentAns) {
+            // DOĞRU
+            const points = config.difficulty * 10;
+            gameState.score += points;
+            box.classList.add('correct');
+            setTimeout(() => {
+                box.classList.remove('correct');
+                generateQuestion();
+                updateUI();
+            }, 250);
+        } else {
+            // YANLIŞ
+            box.classList.add('wrong');
+            gameState.input = "";
+            updateDisplayInput();
+            setTimeout(() => box.classList.remove('wrong'), 300);
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('score').textContent = gameState.score;
+        document.getElementById('pass-count').textContent = gameState.passes;
+    }
+
+    function endGame() {
+        gameState.active = false;
+        clearInterval(gameState.timerLoop);
+        
+        const isNewRecord = gameState.score > personalBest;
+        if (isNewRecord) {
+            personalBest = gameState.score;
+            localStorage.setItem('mathMarathonBest', personalBest);
+            document.getElementById('new-record-badge').style.display = 'inline-block';
+        } else {
+            document.getElementById('new-record-badge').style.display = 'none';
+        }
+
+        // Geçmişe Kaydet
+        const now = new Date();
+        const record = {
+            date: now.toLocaleDateString('tr-TR'),
+            name: gameState.name,
+            score: gameState.score,
+            diff: config.difficulty === 1 ? 'Kolay' : (config.difficulty === 2 ? 'Orta' : 'Zor')
+        };
+        sessionHistory.unshift(record);
+        if (sessionHistory.length > 20) sessionHistory.pop();
+        localStorage.setItem('mathMarathonHistory', JSON.stringify(sessionHistory));
+
+        // UI Güncelle
+        document.getElementById('final-score').textContent = gameState.score;
+        document.getElementById('motivation-text').textContent = motivationSentences[Math.floor(Math.random() * motivationSentences.length)];
+        document.getElementById('result-screen').style.display = 'flex';
+    }
+
+    function resetGame() {
+        document.getElementById('result-screen').style.display = 'none';
+        startGame();
+    }
+
+    function exitToMenu() {
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('setup-screen').style.display = 'flex';
+        updateHighScoreDisplay();
+    }
+
+    function toggleLeaderboard(show) {
+        const scr = document.getElementById('leaderboard-screen');
+        scr.style.display = show ? 'flex' : 'none';
+        if (show) {
+            const body = document.getElementById('leaderboard-body');
+            body.innerHTML = sessionHistory.map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.name}</td>
+                    <td>${r.score}</td>
+                    <td>${r.diff}</td>
+                </tr>
+            `).join('') || "<tr><td colspan='4' style='text-align:center; padding:20px'>Henüz kayıt yok.</td></tr>";
+        }
+    }
+</script>
+</body>
+</html>
