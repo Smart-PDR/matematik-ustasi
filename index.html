@@ -154,6 +154,20 @@
         }
         .history-btn:hover { background: #f5f6fa; }
 
+        .danger-btn {
+            background: #fff;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .danger-btn:hover { background: #fff5f5; }
+
         /* --- COUNTDOWN --- */
         #countdown-screen {
             position: fixed;
@@ -523,7 +537,10 @@
                 <tbody id="leaderboard-body"></tbody>
             </table>
         </div>
-        <button class="history-btn" onclick="toggleLeaderboard(false)" style="margin-top: 20px;">KAPAT</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="danger-btn" onclick="clearAllData()">İSTATİSTİKLERİ SIFIRLA</button>
+            <button class="history-btn" onclick="toggleLeaderboard(false)">KAPAT</button>
+        </div>
     </div>
 </div>
 
@@ -562,6 +579,8 @@
         if (personalBest > 0) {
             document.getElementById('high-score-banner').style.display = 'block';
             document.getElementById('banner-score').textContent = personalBest + " PUAN";
+        } else {
+            document.getElementById('high-score-banner').style.display = 'none';
         }
     }
 
@@ -823,6 +842,18 @@
                 </tr>
             `).join('') || "<tr><td colspan='4' style='text-align:center; padding:20px'>Henüz kayıt yok.</td></tr>";
         }
+    }
+
+    function clearAllData() {
+        // İstatistikleri sıfırlama işlemi
+        sessionHistory = [];
+        personalBest = 0;
+        localStorage.removeItem('mathMarathonHistory');
+        localStorage.removeItem('mathMarathonBest');
+        
+        // UI Güncelleme
+        toggleLeaderboard(true);
+        updateHighScoreDisplay();
     }
 </script>
 </body>
