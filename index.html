@@ -3,857 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-    <title>Matematik Maratonu | Rekor Kır</title>
-    <!-- Şık imza fontu (Playfair Display) eklendi -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+    <title>Matematik Ustası | Sami G. Solo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f0f2f5;
+            --bg-start: #fdfbf7;
             --primary: #6c5ce7;
-            --primary-dark: #5849be;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --light: #dfe6e9;
             --success: #00b894;
-            --success-hover: #00a383;
-            --warning: #fdcb6e;
             --danger: #d63031;
-            --text: #2d3436;
-            --accent: #0984e3;
-            --gold: #ffeaa7;
+            --gold: #fab1a0;
+            --warn: #ffeaa7;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: var(--bg-start);
+            color: var(--dark);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            position: relative;
+            transition: background 1s ease;
         }
 
-        /* --- İMZA STİLİ GÜNCELLENDİ --- */
-        .signature {
-            position: fixed;
-            bottom: 20px;
-            right: 25px;
-            font-size: 1.1rem;
-            color: var(--text);
-            font-family: 'Playfair Display', serif; /* Elit font */
-            font-style: italic;
-            font-weight: 400;
-            pointer-events: none;
-            z-index: 1000;
-            opacity: 0.25; /* Saudam/Saydam görünüm */
-            letter-spacing: 2px;
-        }
+        /* DEVICE MODES CSS VARIABLES */
+        body.mode-phone { --btn-size: 60px; --font-base: 16px; --numpad-gap: 8px; }
+        body.mode-tablet { --btn-size: 80px; --font-base: 20px; --numpad-gap: 12px; }
+        body.mode-board { --btn-size: 110px; --font-base: 28px; --numpad-gap: 20px; }
 
-        /* --- SETUP SCREEN --- */
-        #setup-screen {
-            position: fixed;
-            inset: 0;
-            background: white;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
+        /* Sami G. Signature */
+        .sami-g-signature {
+            position: fixed; bottom: 15px; right: 20px;
+            font-size: 0.9rem; color: rgba(0,0,0,0.4);
+            z-index: 9999; pointer-events: none; text-align: right; line-height: 1.2;
         }
+        .sami-g-signature strong { font-size: 1.1rem; color: rgba(0,0,0,0.7); font-weight: 800; }
 
+        /* Screens */
+        .screen {
+            position: fixed; inset: 0; background: white; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; overflow-y: auto; transition: opacity 0.3s;
+        }
+        .hidden { display: none !important; opacity: 0; }
+
+        /* Setup Screen */
         .setup-card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
+            background: #fff; padding: 30px; border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1); width: 100%; max-width: 650px; text-align: center;
+            border: 4px solid var(--light);
         }
-
-        .high-score-banner {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            color: white;
-            padding: 15px;
-            border-radius: 20px;
-            margin-bottom: 25px;
-            display: none;
-            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .setup-title { font-size: 2rem; margin-bottom: 20px; color: var(--primary); font-weight: 800; }
-        .setup-group { margin-bottom: 20px; }
-        .setup-label { display: block; margin-bottom: 8px; font-weight: 600; color: #636e72; }
-
-        .name-input { 
-            padding: 15px; 
-            border: 2px solid #dfe6e9; 
-            border-radius: 15px; 
-            font-family: inherit; 
-            font-size: 1.1rem; 
-            outline: none; 
-            width: 100%;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .name-input:focus { border-color: var(--primary); }
-
-        .option-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .opt-btn {
-            padding: 10px 15px;
-            border: 2px solid #dfe6e9;
-            background: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-            flex: 1;
-            min-width: 70px;
-            color: #b2bec3;
-        }
-        .opt-btn.active { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
-
-        .start-btn {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.2rem;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: 700;
-            width: 100%;
-            margin-top: 10px;
-            transition: 0.2s;
-            box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2);
-        }
-        .start-btn:active { transform: scale(0.98); }
-
-        .history-btn {
-            background: white;
-            color: var(--text);
-            border: 2px solid #dfe6e9;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            width: 100%;
-            transition: 0.2s;
-        }
-        .history-btn:hover { background: #f5f6fa; }
-
-        .danger-btn {
-            background: #fff;
-            color: var(--danger);
-            border: 2px solid var(--danger);
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            width: 100%;
-            transition: 0.2s;
-        }
-        .danger-btn:hover { background: #fff5f5; }
-
-        /* --- COUNTDOWN --- */
-        #countdown-screen {
-            position: fixed;
-            inset: 0;
-            background: white;
-            z-index: 150;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        #countdown-text {
-            font-size: 10rem;
-            font-weight: 800;
-            color: var(--primary);
-            animation: bounceIn 1s infinite;
-        }
-        @keyframes bounceIn {
-            0%, 100% { transform: scale(0.9); opacity: 0.8; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-
-        /* --- GAME SCREEN --- */
-        #game-screen {
-            display: none;
-            height: 100%;
-            width: 100%;
-            justify-content: center;
-            align-items: center;
-            background: #dfe6e9;
-            padding: 20px;
-        }
-
-        .game-container {
-            width: 100%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            height: 100%;
-            max-height: 800px;
-        }
-
-        .player-zone {
-            background: white;
-            display: flex;
-            flex-direction: column;
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            flex-grow: 1;
-        }
-
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .player-name { font-weight: 700; font-size: 1.3rem; color: var(--primary); }
-
-        .score-box {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text);
-            background: #f1f2f6;
-            padding: 8px 16px;
-            border-radius: 12px;
-        }
-
-        .pass-indicator {
-            font-size: 0.9rem;
-            background: var(--warning);
-            color: #636e72;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-weight: 700;
-        }
-
-        .question-box {
-            background: var(--text);
-            color: white;
-            border-radius: 25px;
-            padding: 30px 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            transition: 0.2s;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            flex-grow: 1; /* Esnek yükseklik */
-            max-height: 250px;
-        }
-
-        .q-text { font-size: 3rem; font-weight: 700; letter-spacing: 2px; }
+        .title { font-size: 2.5rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; letter-spacing: -1px; }
         
-        .a-display {
-            font-size: 2.2rem;
-            min-height: 50px;
-            margin-top: 15px;
-            color: var(--success);
-            font-weight: 600;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
+        .section-label { font-weight: 700; color: #b2bec3; display: block; margin: 15px 0 8px; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
+        
+        .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .setup-btn {
+            flex: 1; min-width: 80px; padding: 12px; border: 2px solid var(--light);
+            background: white; border-radius: 15px; font-weight: 700; cursor: pointer;
+            transition: 0.2s; font-family: inherit; color: var(--dark);
+        }
+        .setup-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3); }
+
+        .big-start-btn {
+            width: 100%; padding: 20px; background: var(--success); color: white;
+            border: none; border-radius: 20px; font-size: 1.5rem; font-weight: 800;
+            margin-top: 25px; cursor: pointer; box-shadow: 0 8px 0 #00a884; transition: 0.1s;
+        }
+        .big-start-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #00a884; }
+
+        /* Stats Bar (Top) */
+        #game-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 5%; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0,0,0,0.05); height: 80px; width: 100%; z-index: 5;
+        }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 0.7rem; font-weight: 700; color: #b2bec3; text-transform: uppercase; }
+        .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--dark); line-height: 1; }
+        .score-val { color: var(--primary); }
+        .time-val { color: var(--danger); width: 80px; }
+
+        /* Main Game Area */
+        #game-area {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; max-width: 800px; margin: 0 auto; padding: 10px; position: relative;
         }
 
-        .numpad { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 12px; 
-            margin-top: auto; 
+        /* Question Bubble */
+        .question-container {
+            background: var(--dark); color: white; padding: 20px 40px; border-radius: 30px;
+            margin-bottom: 20px; text-align: center; position: relative;
+            box-shadow: 0 15px 40px rgba(45, 52, 54, 0.3);
+            transform: scale(1); transition: transform 0.2s;
+            width: 90%;
+        }
+        .question-text { font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; }
+        
+        .answer-preview {
+            height: 60px; margin-top: 15px; background: rgba(255,255,255,0.15);
+            border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: 700; color: #81ecec; border: 2px dashed rgba(255,255,255,0.3);
+        }
+
+        /* Streak Counter */
+        .streak-container {
+            position: absolute; top: -20px; right: -10px; background: var(--accent);
+            color: white; padding: 5px 15px; border-radius: 20px; font-weight: 800;
+            font-size: 0.9rem; transform: rotate(10deg); opacity: 0; transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(253, 121, 168, 0.4); pointer-events: none;
+        }
+        .streak-active { opacity: 1; animation: bounce 0.5s infinite alternate; }
+
+        /* Level / Progress Indicator */
+        .level-indicator {
+            position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+            font-size: 0.9rem; font-weight: 700; color: rgba(0,0,0,0.4);
+            background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 20px;
+        }
+
+        /* Numpad */
+        .numpad {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: var(--numpad-gap); width: 100%; max-width: 500px;
         }
         
         .btn {
-            border: none;
-            border-radius: 18px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: #f1f2f6;
-            color: var(--text);
-            padding: 15px 0;
-            transition: 0.1s;
-            box-shadow: 0 4px 0 #dfe6e9;
+            height: var(--btn-size); border: none; border-radius: 20px;
+            font-size: calc(var(--font-base) * 1.5); font-weight: 700; cursor: pointer;
+            background: white; color: var(--dark); box-shadow: 0 6px 0 var(--light);
+            transition: 0.1s; display: flex; align-items: center; justify-content: center;
         }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--light); background: #f1f2f6; }
         
-        .btn-check { 
-            grid-column: span 2; 
-            background: var(--success); 
-            color: white; 
-            box-shadow: 0 4px 0 var(--success-hover);
-        }
-        .btn-pass {
-            grid-column: span 1;
-            background: var(--warning);
-            color: #636e72;
-            box-shadow: 0 4px 0 #e1b12c;
-            font-size: 1rem;
-            font-weight: 700;
-        }
-        .btn-del {
-            background: var(--danger);
-            color: white;
-            box-shadow: 0 4px 0 #c0392b;
-        }
+        .btn-act { background: var(--secondary); color: white; box-shadow: 0 6px 0 #00b894; }
+        .btn-act:active { box-shadow: 0 2px 0 #00b894; }
 
-        /* --- TIMER BAR --- */
-        #timer-bar-container { height: 12px; background: #dfe6e9; width: 100%; position: absolute; top: 0; left: 0; z-index: 50; }
-        #timer-bar { 
-            height: 100%; 
-            background: var(--success); 
-            width: 100%; 
-            transition: width 1s linear, background-color 0.5s ease; 
-        }
+        .btn-del { background: var(--danger); color: white; box-shadow: 0 6px 0 #c0392b; }
+        .btn-del:active { box-shadow: 0 2px 0 #c0392b; }
 
-        /* --- ANIMATIONS --- */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px); }
-            40% { transform: translateX(10px); }
-            60% { transform: translateX(-10px); }
-            80% { transform: translateX(10px); }
-        }
-        /* Kırmızı ve Sallanma */
-        .wrong { 
-            animation: shake 0.4s; 
-            background: var(--danger) !important; 
-            box-shadow: 0 0 30px rgba(214, 48, 49, 0.6);
-        }
+        .btn-zero { grid-column: span 2; }
 
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        /* Yeşil ve Parlama */
-        .correct { 
-            animation: pop 0.4s; 
-            background: var(--success) !important; 
-            box-shadow: 0 0 30px rgba(0, 184, 148, 0.6);
-        }
+        /* Animations */
+        @keyframes bounce { from { transform: rotate(10deg) scale(1); } to { transform: rotate(10deg) scale(1.1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        .shake { animation: shake 0.3s; }
+        .pop { animation: pop 0.2s; }
+        @keyframes pop { 50% { transform: scale(1.05); } }
 
-        /* Pas Efekti: Küçülme ve Sarı Arkaplan */
-        @keyframes pass-anim {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); background: var(--warning); opacity: 0.8; }
-            100% { transform: scale(1); }
+        /* Effects */
+        .overlay-msg {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 4rem; font-weight: 900; color: var(--success); text-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 100; pointer-events: none; opacity: 0;
         }
-        .passed { animation: pass-anim 0.3s; }
+        .fade-up { animation: fadeUp 0.8s forwards; }
+        @keyframes fadeUp { 0% { opacity: 0; transform: translate(-50%, -20%); } 50% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -80%); } }
 
-        /* --- RESULT SCREEN --- */
-        #result-screen, #leaderboard-screen {
-            position: fixed;
-            inset: 0;
-            background: rgba(45, 52, 54, 0.98);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
+        /* Result Screen */
+        .result-score { font-size: 5rem; font-weight: 900; color: var(--primary); margin: 20px 0; }
+        .high-score-tag { background: var(--gold); padding: 5px 15px; border-radius: 10px; font-weight: 700; color: #d35400; display: inline-block; margin-bottom: 10px; }
+
+        @media (max-width: 500px) {
+            .title { font-size: 1.8rem; }
+            .question-text { font-size: 2.5rem; }
+            .stat-val { font-size: 1.4rem; }
         }
-
-        .result-content {
-            background: white;
-            color: var(--text);
-            padding: 40px;
-            border-radius: 30px;
-            max-width: 400px;
-            width: 100%;
-            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .final-score-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: #636e72; }
-        .final-score-val { font-size: 4rem; font-weight: 800; color: var(--primary); line-height: 1; margin: 10px 0; }
-        .high-score-badge { 
-            background: var(--warning); 
-            color: #2d3436; 
-            display: inline-block; 
-            padding: 5px 15px; 
-            border-radius: 20px; 
-            font-weight: 700; 
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-
-        .leaderboard-content {
-            background: white;
-            width: 100%;
-            max-width: 600px;
-            max-height: 80vh;
-            border-radius: 30px;
-            padding: 30px;
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .table-container { overflow-y: auto; flex-grow: 1; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; }
-        th { font-weight: 700; color: #b2bec3; font-size: 0.9rem; }
-        td { font-weight: 600; }
-        tr:first-child td { color: var(--primary); }
-
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body class="mode-tablet"> <!-- Default Class -->
 
-<!-- İMZA BURAYA EKLENDİ -->
-<div class="signature">Sami G.</div>
+<div class="sami-g-signature">This is a<br><strong>Sami G.</strong><br>production.</div>
 
-<!-- KURULUM EKRANI -->
-<div id="setup-screen">
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen">
     <div class="setup-card">
-        <h1 class="setup-title">Matematik Maratonu</h1>
-
-        <div class="high-score-banner" id="high-score-banner">
-            <div style="font-size:0.9rem; opacity:0.9">SİZİN REKORUNUZ</div>
-            <div style="font-size:1.8rem; font-weight:800" id="banner-score">0 PUAN</div>
-        </div>
+        <h1 class="title">Matematik Ustası</h1>
+        <div style="font-size: 0.9rem; color: #636e72; margin-bottom: 20px;">Kendi rekorunu kır, seviyeleri atla!</div>
         
-        <div class="setup-group">
-            <label class="setup-label">İsminiz</label>
-            <input class="name-input" id="player-name" placeholder="Öğrenci Adı" type="text" maxlength="15" />
+        <!-- Cihaz Seçimi -->
+        <span class="section-label">Cihaz Modu</span>
+        <div class="btn-group">
+            <button class="setup-btn" onclick="setDevice('phone', this)">📱 Telefon</button>
+            <button class="setup-btn active" onclick="setDevice('tablet', this)">📲 Tablet</button>
+            <button class="setup-btn" onclick="setDevice('board', this)">🖥️ Akıllı Tahta</button>
         </div>
 
-        <div class="setup-group">
-            <label class="setup-label">İşlemler</label>
-            <div class="option-btns">
-                <button class="opt-btn active" onclick="toggleOp('+', this)">Toplama</button>
-                <button class="opt-btn active" onclick="toggleOp('-', this)">Çıkarma</button>
-                <button class="opt-btn" onclick="toggleOp('*', this)">Çarpma</button>
-                <button class="opt-btn" onclick="toggleOp('/', this)">Bölme</button>
-            </div>
+        <!-- Oyun Modu -->
+        <span class="section-label">Oyun Modu</span>
+        <div class="btn-group">
+            <button class="setup-btn active" onclick="setMode('time', this)">⏱️ Zamanlı (60sn)</button>
+            <button class="setup-btn" onclick="setMode('survival', this)">🔥 Survival (Ek Süre)</button>
         </div>
 
-        <div class="setup-group">
-            <label class="setup-label">Süre</label>
-            <div class="option-btns">
-                <button class="opt-btn" onclick="setTimer(30, this)">30 Sn</button>
-                <button class="opt-btn active" onclick="setTimer(60, this)">60 Sn</button>
-                <button class="opt-btn" onclick="setTimer(120, this)">2 Dk</button>
-            </div>
+        <!-- Zorluk -->
+        <span class="section-label">Zorluk Seviyesi</span>
+        <div class="btn-group">
+            <button class="setup-btn active" onclick="setDiff(1, this)">Kolay</button>
+            <button class="setup-btn" onclick="setDiff(2, this)">Orta</button>
+            <button class="setup-btn" onclick="setDiff(3, this)">Zor</button>
         </div>
 
-        <div class="setup-group">
-            <label class="setup-label">Zorluk Seviyesi</label>
-            <div class="option-btns">
-                <button class="opt-btn active" onclick="setDiff(1, this)">Başlangıç</button>
-                <button class="opt-btn" onclick="setDiff(2, this)">Orta</button>
-                <button class="opt-btn" onclick="setDiff(3, this)">İleri</button>
-            </div>
+        <!-- İşlemler -->
+        <span class="section-label">İşlemler</span>
+        <div class="btn-group">
+            <button class="setup-btn active op-btn" onclick="toggleOp('+', this)">+</button>
+            <button class="setup-btn active op-btn" onclick="toggleOp('-', this)">-</button>
+            <button class="setup-btn op-btn" onclick="toggleOp('*', this)">x</button>
+            <button class="setup-btn op-btn" onclick="toggleOp('/', this)">÷</button>
         </div>
 
-        <button class="start-btn" onclick="startCountdown()">BAŞLAT</button>
-        <button class="history-btn" onclick="toggleLeaderboard(true)">Geçmiş Denemeler</button>
+        <button class="big-start-btn" onclick="startGame()">BAŞLA</button>
+        <div style="margin-top:15px; font-size:0.8rem; color:#b2bec3;">En İyi Skorunuz: <span id="local-best">0</span></div>
     </div>
 </div>
 
-<!-- GERİ SAYIM -->
-<div id="countdown-screen">
-    <div id="countdown-text">3</div>
-</div>
-
-<!-- OYUN EKRANI -->
-<div id="game-screen">
-    <div id="timer-bar-container">
-        <div id="timer-bar"></div>
-    </div>
-
-    <div class="game-container">
-        <div class="player-zone">
-            <div class="header">
-                <div class="player-name" id="display-name">OYUNCU</div>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <div class="pass-indicator">PAS: <span id="pass-count">3</span></div>
-                    <div class="score-box" id="score">0</div>
-                </div>
-            </div>
-            
-            <div class="question-box" id="qbox">
-                <div class="q-text" id="qtext">?</div>
-                <div class="a-display" id="adisplay"></div>
-            </div>
-            
-            <div class="numpad">
-                <button class="btn" onclick="handleInput('1')">1</button>
-                <button class="btn" onclick="handleInput('2')">2</button>
-                <button class="btn" onclick="handleInput('3')">3</button>
-                <button class="btn" onclick="handleInput('4')">4</button>
-                <button class="btn" onclick="handleInput('5')">5</button>
-                <button class="btn" onclick="handleInput('6')">6</button>
-                <button class="btn" onclick="handleInput('7')">7</button>
-                <button class="btn" onclick="handleInput('8')">8</button>
-                <button class="btn" onclick="handleInput('9')">9</button>
-                <button class="btn btn-pass" onclick="handleInput('PASS')">PAS</button>
-                <button class="btn btn-check" onclick="handleInput('CHECK')">KONTROL ET</button>
-            </div>
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen hidden" style="background: transparent;">
+    <div id="game-header">
+        <div class="stat-box">
+            <div class="stat-label">Skor</div>
+            <div class="stat-val score-val" id="score-display">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Mod</div>
+            <div id="mode-icon" style="font-size: 1.5rem;">⏱️</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Süre</div>
+            <div class="stat-val time-val" id="time-display">60</div>
         </div>
     </div>
-</div>
 
-<!-- SONUÇ EKRANI -->
-<div id="result-screen">
-    <div class="result-content">
-        <div style="font-size:3rem; margin-bottom:10px;">⏱️</div>
-        <div class="final-score-title">Süre Doldu! Skorun:</div>
-        <div class="final-score-val" id="final-score">0</div>
-        <div id="new-record-badge" class="high-score-badge" style="display:none">✨ YENİ REKOR! ✨</div>
-        <p id="motivation-text" style="color:#636e72; margin-bottom:20px; font-style:italic;">Harika bir çabaydı!</p>
-        <button class="start-btn" onclick="resetGame()">TEKRAR DENE</button>
-        <button class="history-btn" onclick="exitToMenu()">ANA MENÜ</button>
+    <div id="game-area">
+        <div class="level-indicator" id="level-display">Seviye 1: Atmosfer</div>
+        
+        <div class="question-container" id="q-container">
+            <div class="streak-container" id="streak-badge">x2 SERİ!</div>
+            <div class="question-text" id="q-text">2 + 2</div>
+            <div class="answer-preview" id="ans-preview"></div>
+        </div>
+
+        <div class="numpad">
+            <button class="btn" onclick="input(7)">7</button>
+            <button class="btn" onclick="input(8)">8</button>
+            <button class="btn" onclick="input(9)">9</button>
+            <button class="btn" onclick="input(4)">4</button>
+            <button class="btn" onclick="input(5)">5</button>
+            <button class="btn" onclick="input(6)">6</button>
+            <button class="btn" onclick="input(1)">1</button>
+            <button class="btn" onclick="input(2)">2</button>
+            <button class="btn" onclick="input(3)">3</button>
+            <button class="btn btn-del" onclick="input('del')">Sil</button>
+            <button class="btn btn-zero" onclick="input(0)">0</button>
+        </div>
+        <button class="big-start-btn" style="margin-top:20px; max-width:500px;" onclick="checkAnswer()">CEVAPLA</button>
     </div>
 </div>
 
-<!-- GEÇMİŞ EKRANI -->
-<div id="leaderboard-screen">
-    <div class="leaderboard-content">
-        <h2 style="margin-bottom: 20px; color:var(--primary)">📜 Son 10 Deneme</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Tarih</th><th>İsim</th><th>Skor</th><th>Zorluk</th></tr>
-                </thead>
-                <tbody id="leaderboard-body"></tbody>
-            </table>
+<!-- RESULT SCREEN -->
+<div id="result-screen" class="screen hidden">
+    <div style="font-size: 4rem;">🏆</div>
+    <h1 style="color:var(--dark);">Oyun Bitti!</h1>
+    
+    <div id="new-record-msg" class="hidden high-score-tag">YENİ REKOR! 🔥</div>
+    
+    <div class="result-score" id="final-score">0</div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; width:100%; max-width:400px; margin-bottom:20px;">
+        <div style="background:#f1f2f6; padding:15px; border-radius:15px; text-align:center;">
+            <div class="stat-label">Doğru</div>
+            <div style="font-weight:800; font-size:1.5rem; color:var(--success);" id="final-correct">0</div>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="danger-btn" onclick="clearAllData()">İSTATİSTİKLERİ SIFIRLA</button>
-            <button class="history-btn" onclick="toggleLeaderboard(false)">KAPAT</button>
+        <div style="background:#f1f2f6; padding:15px; border-radius:15px; text-align:center;">
+            <div class="stat-label">Yanlış</div>
+            <div style="font-weight:800; font-size:1.5rem; color:var(--danger);" id="final-wrong">0</div>
         </div>
     </div>
+
+    <button class="big-start-btn" style="max-width:300px;" onclick="resetApp()">TEKRAR OYNA</button>
 </div>
+
+<div id="overlay-feedback" class="overlay-msg">HARİKA!</div>
 
 <script>
-    // --- OYUN AYARLARI VE DEĞİŞKENLER ---
-    let config = { time: 60, difficulty: 1, allowedOps: ['+', '-'] };
-    let sessionHistory = JSON.parse(localStorage.getItem('mathMarathonHistory')) || [];
-    let personalBest = localStorage.getItem('mathMarathonBest') || 0;
+    // Config & State
+    let config = { diff: 1, ops: ['+', '-'], mode: 'time', device: 'tablet' };
+    let state = { score: 0, time: 60, active: false, currentQ: {}, input: '', streak: 0, correct: 0, wrong: 0 };
+    let timerInterval;
 
-    let gameState = {
-        name: "",
-        score: 0,
-        currentAns: 0,
-        input: "",
-        passes: 3,
-        timeLeft: 60,
-        active: false,
-        timerLoop: null
-    };
+    // Load Local Best
+    document.getElementById('local-best').textContent = localStorage.getItem('mathMasterBest') || 0;
 
-    const motivationSentences = [
-        "Harika gidiyorsun, pratik yaptıkça hızlanacaksın!",
-        "Matematik kasların gelişiyor!",
-        "Bir dahaki sefere kendi rekorunu kırabilirsin.",
-        "Süper odaklanma! Aynen devam et.",
-        "Rakamların efendisi olma yolundasın!"
-    ];
-
-    // --- BAŞLANGIÇ AYARLARI ---
-    window.onload = () => {
-        updateHighScoreDisplay();
-        setupTouch();
-    };
-
-    function updateHighScoreDisplay() {
-        if (personalBest > 0) {
-            document.getElementById('high-score-banner').style.display = 'block';
-            document.getElementById('banner-score').textContent = personalBest + " PUAN";
-        } else {
-            document.getElementById('high-score-banner').style.display = 'none';
-        }
+    // --- SETUP FUNCTIONS ---
+    function setDevice(dev, btn) {
+        config.device = dev;
+        document.body.className = `mode-${dev}`;
+        updateBtnGroup(btn);
     }
 
-    function setupTouch() {
-        // Dokunmatik gecikmesini önlemek için
-        document.addEventListener('touchstart', function(event) {
-            if (event.target.tagName === 'BUTTON') {
-                event.target.click();
-                event.preventDefault();
-            }
-        }, { passive: false });
+    function setMode(m, btn) {
+        config.mode = m;
+        updateBtnGroup(btn);
     }
 
-    // --- MENU ETKİLEŞİMLERİ ---
+    function setDiff(d, btn) {
+        config.diff = d;
+        updateBtnGroup(btn);
+    }
+
     function toggleOp(op, btn) {
-        if (btn.classList.contains('active')) {
-            if (config.allowedOps.length > 1) {
-                config.allowedOps = config.allowedOps.filter(o => o !== op);
+        if (config.ops.includes(op)) {
+            if (config.ops.length > 1) {
+                config.ops = config.ops.filter(o => o !== op);
                 btn.classList.remove('active');
             }
         } else {
-            config.allowedOps.push(op);
+            config.ops.push(op);
             btn.classList.add('active');
         }
     }
 
-    function setTimer(val, btn) {
-        config.time = val;
-        btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+    function updateBtnGroup(btn) {
+        let siblings = btn.parentElement.children;
+        for (let sib of siblings) { if(!sib.classList.contains('op-btn')) sib.classList.remove('active'); }
         btn.classList.add('active');
     }
 
-    function setDiff(val, btn) {
-        config.difficulty = val;
-        btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    // --- OYUN DÖNGÜSÜ ---
-    function startCountdown() {
-        const nameInput = document.getElementById('player-name').value.trim();
-        gameState.name = nameInput || "Oyuncu";
-        
-        document.getElementById('setup-screen').style.display = 'none';
-        const scr = document.getElementById('countdown-screen');
-        const txt = document.getElementById('countdown-text');
-        scr.style.display = 'flex';
-        
-        let c = 3;
-        txt.textContent = c;
-        
-        const loop = setInterval(() => {
-            c--;
-            if (c > 0) {
-                txt.textContent = c;
-            } else {
-                clearInterval(loop);
-                txt.textContent = "BAŞLA!";
-                setTimeout(() => {
-                    scr.style.display = 'none';
-                    startGame();
-                }, 600);
-            }
-        }, 800);
-    }
-
+    // --- GAME LOGIC ---
     function startGame() {
-        document.getElementById('game-screen').style.display = 'flex';
-        document.getElementById('display-name').textContent = gameState.name.toUpperCase();
+        state = { score: 0, time: config.mode === 'time' ? 60 : 20, active: true, input: '', streak: 0, correct: 0, wrong: 0 };
         
-        // Reset State
-        gameState.score = 0;
-        gameState.passes = 3;
-        gameState.timeLeft = config.time;
-        gameState.active = true;
-        gameState.input = "";
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
         
+        document.getElementById('mode-icon').textContent = config.mode === 'time' ? '⏱️' : '🔥';
         updateUI();
-        generateQuestion();
-        startTimer();
-    }
-
-    function startTimer() {
-        const bar = document.getElementById('timer-bar');
-        bar.style.width = '100%';
-        bar.style.backgroundColor = 'var(--success)';
-
-        gameState.timerLoop = setInterval(() => {
-            if (!gameState.active) return;
-            gameState.timeLeft--;
-            
-            const pct = (gameState.timeLeft / config.time) * 100;
-            bar.style.width = pct + "%";
-            
-            if (pct < 30) bar.style.backgroundColor = 'var(--danger)';
-            else if (pct < 60) bar.style.backgroundColor = 'var(--warning)';
-
-            if (gameState.timeLeft <= 0) {
-                endGame();
-            }
+        nextQuestion();
+        
+        // Start Timer
+        timerInterval = setInterval(() => {
+            if (!state.active) return;
+            state.time--;
+            updateUI();
+            if (state.time <= 0) endGame();
         }, 1000);
     }
 
-    function generateQuestion() {
-        const ops = config.allowedOps;
+    function nextQuestion() {
+        state.input = '';
+        updateInputDisplay();
+        
+        const ops = config.ops;
         const op = ops[Math.floor(Math.random() * ops.length)];
         let n1, n2, ans, symbol = op;
-        const mult = config.difficulty * 10; // Zorluk çarpanı
+        const mult = config.diff * 10; // Difficulty multiplier
+
+        // Generate Logic
+        if (op === '+') { 
+            n1 = r(mult) + 2; n2 = r(mult) + 2; ans = n1 + n2; 
+        } else if (op === '-') { 
+            n1 = r(mult) + 5; n2 = r(n1 - 1) + 1; ans = n1 - n2; 
+        } else if (op === '*') { 
+            n1 = r(config.diff * 5) + 2; n2 = r(config.diff * 4) + 2; ans = n1 * n2; symbol = 'x'; 
+        } else { 
+            let res = r(config.diff * 4) + 2; n2 = r(config.diff * 3) + 2; n1 = res * n2; ans = res; symbol = '÷'; 
+        }
+
+        state.currentQ = { text: `${n1} ${symbol} ${n2}`, ans: ans };
+        document.getElementById('q-text').textContent = state.currentQ.text;
         
-        // Mantıklı soru üretimi
-        if (op === '+') {
-            n1 = Math.floor(Math.random() * mult) + 5;
-            n2 = Math.floor(Math.random() * mult) + 5;
-            ans = n1 + n2;
-        } else if (op === '-') {
-            n1 = Math.floor(Math.random() * mult) + 10;
-            n2 = Math.floor(Math.random() * n1); 
-            ans = n1 - n2;
-        } else if (op === '*') {
-            // Çarpma için daha küçük sayılar
-            let maxFactor = config.difficulty === 1 ? 9 : (config.difficulty === 2 ? 12 : 20);
-            n1 = Math.floor(Math.random() * maxFactor) + 2;
-            n2 = Math.floor(Math.random() * maxFactor) + 2;
-            ans = n1 * n2;
-            symbol = 'x';
-        } else { // Bölme
-            let divisorMax = config.difficulty === 1 ? 9 : 15;
-            n2 = Math.floor(Math.random() * divisorMax) + 2;
-            ans = Math.floor(Math.random() * 10) + 2; // Sonuç
-            n1 = n2 * ans;
-            symbol = '÷';
-        }
-
-        gameState.currentAns = ans;
-        gameState.input = "";
-        document.getElementById('qtext').textContent = `${n1} ${symbol} ${n2}`;
-        document.getElementById('adisplay').textContent = "?";
-        document.getElementById('adisplay').style.color = "var(--text)";
+        // Dynamic Difficulty / Leveling Visuals
+        updateBackground();
     }
 
-    function handleInput(val) {
-        if (!gameState.active) return;
+    function r(max) { return Math.floor(Math.random() * max); }
 
-        if (val === 'PASS') {
-            if (gameState.passes > 0) {
-                gameState.passes--;
-                
-                // PAS EFEKTİ
-                const box = document.getElementById('qbox');
-                box.classList.add('passed');
-                setTimeout(() => box.classList.remove('passed'), 300);
-
-                updateUI();
-                generateQuestion();
-            }
-        } else if (val === 'CHECK') {
-            checkAnswer();
-        } else if (val === 'C') {
-            gameState.input = "";
-            updateDisplayInput();
-        } else {
-            if (gameState.input.length < 6) {
-                gameState.input += val;
-                updateDisplayInput();
-            }
-        }
+    function input(val) {
+        if (!state.active) return;
+        if (val === 'del') state.input = '';
+        else if (state.input.length < 5) state.input += val;
+        updateInputDisplay();
     }
 
-    function updateDisplayInput() {
-        const disp = document.getElementById('adisplay');
-        disp.textContent = gameState.input;
-        disp.style.color = "var(--primary)";
+    function updateInputDisplay() {
+        const prev = document.getElementById('ans-preview');
+        prev.textContent = state.input;
+        if(state.input) prev.style.borderColor = "var(--primary)";
+        else prev.style.borderColor = "rgba(255,255,255,0.3)";
     }
 
     function checkAnswer() {
-        if (gameState.input === "") return;
+        if (!state.input) return;
+        const val = parseInt(state.input);
         
-        const userAns = parseInt(gameState.input);
-        const box = document.getElementById('qbox');
+        if (val === state.currentQ.ans) {
+            // Correct
+            state.correct++;
+            state.streak++;
+            
+            // Score Calculation
+            let basePoints = config.diff * 10;
+            let multiplier = Math.min(Math.floor(state.streak / 3) + 1, 5); // Max x5
+            state.score += basePoints * multiplier;
 
-        if (userAns === gameState.currentAns) {
-            // DOĞRU
-            const points = config.difficulty * 10;
-            gameState.score += points;
-            box.classList.add('correct');
-            setTimeout(() => {
-                box.classList.remove('correct');
-                generateQuestion();
-                updateUI();
-            }, 250);
+            // Survival Bonus
+            if (config.mode === 'survival') state.time += 2; 
+
+            showFeedback("DOĞRU!", "success");
+            
+            // Visual Pop
+            document.getElementById('q-container').classList.add('pop');
+            setTimeout(()=>document.getElementById('q-container').classList.remove('pop'), 200);
+
         } else {
-            // YANLIŞ
-            box.classList.add('wrong');
-            gameState.input = "";
-            updateDisplayInput();
-            setTimeout(() => box.classList.remove('wrong'), 300);
+            // Wrong
+            state.streak = 0;
+            state.wrong++;
+            if (config.mode === 'survival') state.time = Math.max(0, state.time - 5); // Penalty in survival
+            
+            showFeedback("YANLIŞ!", "danger");
+            document.getElementById('q-container').classList.add('shake');
+            setTimeout(()=>document.getElementById('q-container').classList.remove('shake'), 300);
         }
+
+        updateUI();
+        nextQuestion();
     }
 
     function updateUI() {
-        document.getElementById('score').textContent = gameState.score;
-        document.getElementById('pass-count').textContent = gameState.passes;
+        document.getElementById('score-display').textContent = state.score;
+        document.getElementById('time-display').textContent = state.time;
+        
+        // Colorize Time
+        const tDiv = document.getElementById('time-display');
+        if (state.time < 10) tDiv.style.color = 'red';
+        else tDiv.style.color = 'var(--dark)';
+
+        // Streak Badge
+        const badge = document.getElementById('streak-badge');
+        if (state.streak >= 3) {
+            let mult = Math.min(Math.floor(state.streak / 3) + 1, 5);
+            badge.textContent = `x${mult} SERİ! 🔥`;
+            badge.classList.add('streak-active');
+        } else {
+            badge.classList.remove('streak-active');
+        }
+    }
+
+    function updateBackground() {
+        // Change background based on score (Ascending to Space)
+        const s = state.score;
+        const body = document.body;
+        const lvlTxt = document.getElementById('level-display');
+
+        if (s < 100) { body.style.backgroundColor = "#fdfbf7"; lvlTxt.textContent = "Seviye 1: Yeryüzü"; }
+        else if (s < 300) { body.style.backgroundColor = "#81ecec"; lvlTxt.textContent = "Seviye 2: Gökyüzü"; }
+        else if (s < 600) { body.style.backgroundColor = "#74b9ff"; lvlTxt.textContent = "Seviye 3: Stratosfer"; }
+        else if (s < 1000) { body.style.backgroundColor = "#a29bfe"; lvlTxt.textContent = "Seviye 4: Atmosfer"; }
+        else { body.style.backgroundColor = "#2d3436"; lvlTxt.textContent = "Seviye 5: Uzay Boşluğu 🚀"; lvlTxt.style.color = "white"; }
+    }
+
+    function showFeedback(text, type) {
+        const el = document.getElementById('overlay-feedback');
+        el.textContent = text;
+        el.style.color = `var(--${type})`;
+        el.classList.remove('fade-up');
+        void el.offsetWidth; // trigger reflow
+        el.classList.add('fade-up');
     }
 
     function endGame() {
-        gameState.active = false;
-        clearInterval(gameState.timerLoop);
+        clearInterval(timerInterval);
+        state.active = false;
         
-        const isNewRecord = gameState.score > personalBest;
+        // Check High Score
+        const oldBest = parseInt(localStorage.getItem('mathMasterBest') || 0);
+        const isNewRecord = state.score > oldBest;
         if (isNewRecord) {
-            personalBest = gameState.score;
-            localStorage.setItem('mathMarathonBest', personalBest);
-            document.getElementById('new-record-badge').style.display = 'inline-block';
+            localStorage.setItem('mathMasterBest', state.score);
+            document.getElementById('new-record-msg').classList.remove('hidden');
         } else {
-            document.getElementById('new-record-badge').style.display = 'none';
+            document.getElementById('new-record-msg').classList.add('hidden');
         }
 
-        // Geçmişe Kaydet
-        const now = new Date();
-        const record = {
-            date: now.toLocaleDateString('tr-TR'),
-            name: gameState.name,
-            score: gameState.score,
-            diff: config.difficulty === 1 ? 'Kolay' : (config.difficulty === 2 ? 'Orta' : 'Zor')
-        };
-        sessionHistory.unshift(record);
-        if (sessionHistory.length > 20) sessionHistory.pop();
-        localStorage.setItem('mathMarathonHistory', JSON.stringify(sessionHistory));
-
-        // UI Güncelle
-        document.getElementById('final-score').textContent = gameState.score;
-        document.getElementById('motivation-text').textContent = motivationSentences[Math.floor(Math.random() * motivationSentences.length)];
-        document.getElementById('result-screen').style.display = 'flex';
-    }
-
-    function resetGame() {
-        document.getElementById('result-screen').style.display = 'none';
-        startGame();
-    }
-
-    function exitToMenu() {
-        document.getElementById('result-screen').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'none';
-        document.getElementById('setup-screen').style.display = 'flex';
-        updateHighScoreDisplay();
-    }
-
-    function toggleLeaderboard(show) {
-        const scr = document.getElementById('leaderboard-screen');
-        scr.style.display = show ? 'flex' : 'none';
-        if (show) {
-            const body = document.getElementById('leaderboard-body');
-            body.innerHTML = sessionHistory.map(r => `
-                <tr>
-                    <td>${r.date}</td>
-                    <td>${r.name}</td>
-                    <td>${r.score}</td>
-                    <td>${r.diff}</td>
-                </tr>
-            `).join('') || "<tr><td colspan='4' style='text-align:center; padding:20px'>Henüz kayıt yok.</td></tr>";
-        }
-    }
-
-    function clearAllData() {
-        // İstatistikleri sıfırlama işlemi
-        sessionHistory = [];
-        personalBest = 0;
-        localStorage.removeItem('mathMarathonHistory');
-        localStorage.removeItem('mathMarathonBest');
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
         
-        // UI Güncelleme
-        toggleLeaderboard(true);
-        updateHighScoreDisplay();
+        document.getElementById('final-score').textContent = state.score;
+        document.getElementById('final-correct').textContent = state.correct;
+        document.getElementById('final-wrong').textContent = state.wrong;
+    }
+
+    function resetApp() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('setup-screen').classList.remove('hidden');
+        document.getElementById('local-best').textContent = localStorage.getItem('mathMasterBest') || 0;
+        document.body.style.backgroundColor = "#fdfbf7";
     }
 </script>
 </body>
